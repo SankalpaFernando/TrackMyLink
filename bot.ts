@@ -114,7 +114,7 @@ bot.command("stats", async (ctx) => {
   const logs = await Log.find({ dateTime: { $gte:before24hours, $lte: new Date() } });
   console.log("🚀 ~ file: bot.ts ~ line 115 ~ bot.command ~ logs", logs)
   await generatePDF(id,logs);
-  var command = `curl -v -F "chat_id=1444974878" -F document=@/home/sankalpa/Documents/Projects/LinkTracker/server/${id}.pdf https://api.telegram.org/bot5354900801:AAEj3O8fjI6AnTtj1uG5DGBgBf3XtlAximA/sendDocument`;
+  var command = `curl -v -F "chat_id=1444974878" -F document=@/${process.env.INIT_CWD}/${id}.pdf https://api.telegram.org/bot5354900801:AAEj3O8fjI6AnTtj1uG5DGBgBf3XtlAximA/sendDocument`;
   exec(command, (error:any, stdout:any, stderr:any) => {
     console.log("🚀 ~ file: bot.ts ~ line 120 ~ exec ~ error", error)
     if (error === null) {
