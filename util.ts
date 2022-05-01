@@ -45,7 +45,7 @@ export const getLocationByIP = async (ip: string|null) => {
 
 export const generatePDF = async (id: number, details: ({name:String}),data: ({ dateTime: Date, type: string, location: Object })[]) => {
   var options = {
-    format: 'A3',
+    format: 'A2',
     orientation: 'portrait',
     border: '10mm',
     header: {
