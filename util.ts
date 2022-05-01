@@ -77,7 +77,6 @@ export const generatePDF = async (id: number, details: ({name:String}),data: ({ 
     location: log.location
   }));
   // @ts-ignore
-  console.log('🚀 ~ file: util.ts ~ line 76 ~ users ~ log.location',data[1].location);
   var document = {
     html: html,
     data: {
