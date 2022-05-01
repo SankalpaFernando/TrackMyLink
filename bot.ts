@@ -15,7 +15,7 @@ var util = require('util');
 var exec = require('child_process').exec;
 
 
-const token = process.env.BOT_TOKEN;
+const token = process.env.BOT_TOKEN || "";
 
 interface MyWizardSession extends Scenes.WizardSessionData {
   link: string;
