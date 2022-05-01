@@ -1,9 +1,5 @@
 
 import { Composer, Context, Markup, Scenes, session, Telegraf } from "telegraf";
-import fs from "fs";
-import path from "path";
-import axios from "axios";
-import url from "url";
 import isURL from "validator/lib/isURL";
 import UserModel from "./schema/User";
 import { addNewLink, generatePDF, isExistingUser, removePDF } from "./util";
