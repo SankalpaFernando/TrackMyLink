@@ -13,6 +13,8 @@ import Link from "./schema/Link";
 import mongoose from "mongoose";
 var util = require('util');
 var exec = require('child_process').exec;
+require("dotenv").config();
+
 
 
 const token = process.env.BOT_TOKEN || "";
