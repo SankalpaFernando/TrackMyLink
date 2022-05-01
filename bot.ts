@@ -45,7 +45,7 @@ statsHandler.use(async (ctx) => {
   const link =mongoose.isValidObjectId(id) ?  await Link.findById(id) : null;
   if (link !== null) {
     const logs = await Log.find({
-      dateTime: { $gte: before24hours, $lte: new Date() },
+      dateTime: { $gte: before24hours, $lte: new Date() }, linkID: id
     }).lean();
     await generatePDF(id,link, logs);
     var command = `curl -v -F "chat_id=1444974878" -F document=@${process.env.INIT_CWD}/pdf/${id}.pdf https://api.telegram.org/bot5354900801:AAEj3O8fjI6AnTtj1uG5DGBgBf3XtlAximA/sendDocument`;
