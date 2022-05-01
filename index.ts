@@ -28,7 +28,7 @@ app.get("/:type/:linkID", async(req:Request,res:Response) => {
 })
 
 
-const PORT = process.env.PORT || 5500;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server Started at PORT ${PORT}`);

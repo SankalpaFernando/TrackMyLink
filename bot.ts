@@ -147,7 +147,6 @@ bot.command("link", async (ctx) => {
     }
 })
 
-
 bot.command("stats", async (ctx) => {
   ctx.scene.enter('stats-wizard');
 })
