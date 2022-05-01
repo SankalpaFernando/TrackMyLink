@@ -6,30 +6,21 @@ import axios from "axios";
 import url from "url";
 import isURL from "validator/lib/isURL";
 import UserModel from "./schema/User";
-import { addNewLink, generatePDF, isExistingUser } from "./util";
+import { addNewLink, generatePDF, isExistingUser, removePDF } from "./util";
 import moment from "moment";
 import Log from "./schema/Log";
+import Link from "./schema/Link";
+import mongoose from "mongoose";
 var util = require('util');
 var exec = require('child_process').exec;
 
-var FormData = require('form-data');
 
 const token = '5354900801:AAEj3O8fjI6AnTtj1uG5DGBgBf3XtlAximA';
 
 interface MyWizardSession extends Scenes.WizardSessionData {
-  // will be available under `ctx.scene.session.myWizardSessionProp`
   link: string;
   name: string;
 }
-
-/**
- * We can define our own context object.
- *
- * We now have to set the scene object under the `scene` property. As we extend
- * the scene session, we need to pass the type in as a type variable.
- *
- * We also have to set the wizard object under the `wizard` property.
- */
 interface MyContext extends Context {
   // will be available under `ctx.myContextProp`
   myContextProp: string;
@@ -44,6 +35,33 @@ const stepHandler = new Composer<MyContext>();
 stepHandler.use(async (ctx) => {
   return ctx.wizard.selectStep(3);
 });
+
+const statsHandler = new Composer<MyContext>();
+statsHandler.use(async (ctx) => {
+  // @ts-ignore
+  const before24hours = moment().subtract(24, 'hours');
+  // @ts-ignore
+  const id = ctx.message.text;
+  const link =mongoose.isValidObjectId(id) ?  await Link.findById(id) : null;
+  if (link !== null) {
+    const logs = await Log.find({
+      dateTime: { $gte: before24hours, $lte: new Date() },
+    }).lean();
+    await generatePDF(id,link, logs);
+    var command = `curl -v -F "chat_id=1444974878" -F document=@${process.env.INIT_CWD}/pdf/${id}.pdf https://api.telegram.org/bot5354900801:AAEj3O8fjI6AnTtj1uG5DGBgBf3XtlAximA/sendDocument`;
+    exec(command, (error: any, stdout: any, stderr: any) => {
+      console.log("🚀 ~ file: bot.ts ~ line 61 ~ exec ~ error", error)
+      if (error === null) {
+        // ctx.scene.leave();
+        removePDF(id);
+      }
+    });
+  } else {
+    // @ts-ignore
+    ctx.telegram.sendMessage(ctx.chat?.id, 'LinkID can\'t be found');
+  }
+});
+
 
 const superWizard = new Scenes.WizardScene(
   'link-wizard',
@@ -79,8 +97,27 @@ const superWizard = new Scenes.WizardScene(
   },
 );
 
+const statsWizard = new Scenes.WizardScene(
+  'stats-wizard',
+  async (ctx) => {
+    await ctx.reply('Enter the Link ID to get the Stats');
+    // @ts-ignore
+    return ctx.wizard.selectStep(1);
+  },
+  statsHandler,
+  async (ctx) => {
+    console.log("End")
+  }
+);
+
+
+
+
+
+
+
 const bot = new Telegraf<MyContext>(token);
-const stage = new Scenes.Stage<MyContext>([superWizard]);
+const stage = new Scenes.Stage<MyContext>([superWizard, statsWizard]);
 bot.use(session());
 bot.use((ctx, next) => {
   const now = new Date();
@@ -89,15 +126,16 @@ bot.use((ctx, next) => {
 });
 bot.use(stage.middleware());
 
-// bot.command("start", async ctx => {
-//   const { id: _id, first_name, last_name } = ctx.from;
-//   let message = `Hi ${first_name}, I know you already!.What can I do for you today?`;
-//   if (await isExistingUser(_id)) {
-//     await (new UserModel({ _id, name: (first_name + " " + last_name) })).save();
-//     message = `Hi ${first_name}, I'm TrackMyLink Bot. How can I help you ?`;
-//   }
-//   bot.telegram.sendMessage(ctx.chat.id, message);
-// })
+bot.command("start", async ctx => {
+  const { id: _id, first_name, last_name } = ctx.from;
+  let message = `Hi ${first_name}, I know you already!.What can I do for you today?`;
+  if (await !isExistingUser(_id)) {
+    await (new UserModel({ _id, name: (first_name + " " + last_name) })).save();
+    message = `Hi ${first_name}, I'm TrackMyLink Bot. How can I help you ?`;
+  }
+  bot.telegram.sendMessage(ctx.chat.id, message);
+})
+
 bot.command("link", async (ctx) => {
   const { id, first_name } = ctx.from;
     if (await isExistingUser(id)) {
@@ -109,17 +147,6 @@ bot.command("link", async (ctx) => {
 
 
 bot.command("stats", async (ctx) => {
-  const before24hours = moment().subtract(24, "hours")
-  const { id } = ctx.from;
-  const logs = await Log.find({ dateTime: { $gte:before24hours, $lte: new Date() } });
-  console.log("🚀 ~ file: bot.ts ~ line 115 ~ bot.command ~ logs", logs)
-  await generatePDF(id,logs);
-  var command = `curl -v -F "chat_id=1444974878" -F document=@/${process.env.INIT_CWD}/${id}.pdf https://api.telegram.org/bot5354900801:AAEj3O8fjI6AnTtj1uG5DGBgBf3XtlAximA/sendDocument`;
-  exec(command, (error:any, stdout:any, stderr:any) => {
-    console.log("🚀 ~ file: bot.ts ~ line 120 ~ exec ~ error", error)
-    if (error === null) {
-      
-    }
-  })
+  ctx.scene.enter('stats-wizard');
 })
 export default bot;

@@ -1,6 +1,7 @@
 import axios from "axios";
 const pdf = require("pdf-creator-node");
 import fs from 'fs';
+import path from "path"
 
 // Read HTML Template
 var html = fs.readFileSync('./templates/dataTable.html', 'utf8');
@@ -25,7 +26,7 @@ export const addNewLink = async (uid:number,name:string,link:string) => {
     (link) =>
       `<b>${startCase(link)}</b> - <a href='${domain}/${link[0]}/${
         linkObj.id
-      }'>${domain}/${link[0]}/${linkObj.id}</a>`
+      }'>${domain}/${link[0]}/${linkObj.id}</a>                               `
   );
   return { linkID:linkObj.id,links}
 }
@@ -42,51 +43,62 @@ export const getLocationByIP = async (ip: string|null) => {
   }
 };
 
-export const generatePDF = (id:number,data:({dateTime:Date,type:string})[]) => {
-   var options = {
-     format: 'A3',
-     orientation: 'portrait',
-     border: '10mm',
-     header: {
-       height: '45mm',
-       contents: '<div style="text-align: center;">Author: Shyam Hajare</div>',
-     },
-     footer: {
-       height: '28mm',
-       contents: {
-         first: 'Cover page',
-         2: 'Second page', // Any page number is working. 1-based index
-         default:
-           '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
-         last: 'Last Page',
-       },
-     },
-   };
-  var users = data.map((log,index) => ({
-    count:index+1,
+export const generatePDF = async (id: number, details: ({name:String}),data: ({ dateTime: Date, type: string, location: Object })[]) => {
+  var options = {
+    format: 'A2',
+    orientation: 'portrait',
+    border: '10mm',
+    header: {
+      height: '45mm',
+      contents: `<div style="text-align: center;font-size:20px">${details.name}</div>`,
+    },
+    footer: {
+      height: '28mm',
+      contents: {
+        first: 'Cover page',
+        2: 'Second page', // Any page number is working. 1-based index
+        default:
+          '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
+        last: 'Last Page',
+      },
+    },
+  };
+  var users = data.map((log, index) => ({
+    count: index + 1,
     date: moment(log.dateTime).format('YYYY-MM-DD'),
     time: moment(log.dateTime).format('HH:mm:ss'),
-    type: (() => {
+    type: () => {
       switch (log.type) {
-        case "w":
-          return "Whatsapp"
+        case 'w':
+          return 'Whatsapp';
       }
-    })
+    },
+    // @ts-ignore
+    location: log.location
   }));
+  // @ts-ignore
+  console.log('🚀 ~ file: util.ts ~ line 76 ~ users ~ log.location',data[1].location);
   var document = {
     html: html,
     data: {
       users: users,
     },
-    path: `./${id}.pdf`,
+    path: `./pdf/${id}.pdf`,
     type: 'w',
   };
-  pdf
+  await pdf
     .create(document, options)
-    .then((res:any) => {
+    .then((res: any) => {
       console.log(res);
     })
-    .catch((error:any) => {
+    .catch((error: any) => {
       console.error(error);
     });
+}
+
+
+export const removePDF = async(id:number) => {
+  await fs.rm(path.join(process.cwd(), `./pdf/${id}.pdf`), () => { 
+
+  });  
 }
