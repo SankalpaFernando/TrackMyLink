@@ -17,7 +17,7 @@ app.get("/:type/:linkID", async(req:Request,res:Response) => {
   if (link !== null) {
     const ip = requestIP.getClientIp(req);
     const location = await getLocationByIP(ip);
-    await (new Log({ location, dateTime: new Date(), linkID, type })).save()
+    await (new Log({ location, dateTime: new Date().toUTCString(), linkID, type })).save()
     return res.redirect(link.link.toString());
   }
   return res.status(404).json({ success: false });

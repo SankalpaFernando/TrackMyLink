@@ -65,12 +65,19 @@ export const generatePDF = async (id: number, details: ({name:String}),data: ({ 
   };
   var users = data.map((log, index) => ({
     count: index + 1,
-    date: moment(log.dateTime).format('YYYY-MM-DD'),
-    time: moment(log.dateTime).format('HH:mm:ss'),
+    date: moment(log.dateTime).format('YYYY-MM-DD HH:mm:ss +GMT'),
     type: () => {
       switch (log.type) {
         case 'w':
           return 'Whatsapp';
+        case 'l':
+          return 'LinkedIn';
+        case 'f':
+          return 'Facebook';
+        case 'i':
+          return 'Instagram';
+        case 'g':
+          return 'General'
       }
     },
     // @ts-ignore
