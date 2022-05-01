@@ -45,7 +45,7 @@ export const getLocationByIP = async (ip: string|null) => {
 
 export const generatePDF = async (id: number, details: ({name:String}),data: ({ dateTime: Date, type: string, location: Object })[]) => {
   var options = {
-    format: 'A2',
+    format: 'A3',
     orientation: 'portrait',
     border: '10mm',
     header: {
@@ -65,7 +65,7 @@ export const generatePDF = async (id: number, details: ({name:String}),data: ({ 
   };
   var users = data.map((log, index) => ({
     count: index + 1,
-    date: moment(log.dateTime).format('YYYY-MM-DD HH:mm:ss +GMT'),
+    date: moment(log.dateTime).format('YYYY-MM-DD HH:mm:ss'),
     type: () => {
       switch (log.type) {
         case 'w':
