@@ -7,6 +7,8 @@ import mongoose from "./db";
 import bot from "./bot";
 import Link from "./schema/Link";
 
+require("dotenv").config();
+
 const app = express();
 app.use(require("cors")())
 app.use(express.static(path.resolve('./public')));

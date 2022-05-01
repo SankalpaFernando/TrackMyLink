@@ -15,7 +15,7 @@ var util = require('util');
 var exec = require('child_process').exec;
 
 
-const token = '5354900801:AAEj3O8fjI6AnTtj1uG5DGBgBf3XtlAximA';
+const token = process.env.BOT_TOKEN;
 
 interface MyWizardSession extends Scenes.WizardSessionData {
   link: string;
@@ -91,7 +91,7 @@ const superWizard = new Scenes.WizardScene(
     const {linkID,links} = await addNewLink(ctx!.from!.id, name, link);
     const reply = `Your Link ID is <b>${linkID}</b> <pre>            </pre>${links.join(
       ''
-    )}<pre>            </pre> Use the Link ID to get the statistics of the links in last 24 hours and in the end of the day you will receive statistics of that day automatically`;
+    )}<pre>            </pre>Use the Link ID to get the statistics of the links in last 24 hours.`;
     await ctx.replyWithHTML(reply);
     return await ctx.scene.leave();
   },
