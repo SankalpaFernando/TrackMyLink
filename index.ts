@@ -6,6 +6,8 @@ import { getLocationByIP } from "./util";
 import mongoose from "./db";
 import bot from "./bot";
 import Link from "./schema/Link";
+import cron from "cron";
+import moment from "moment";
 
 require("dotenv").config();
 
@@ -27,6 +29,13 @@ app.get("/:type/:linkID", async(req:Request,res:Response) => {
   
 })
 
+const job = new cron.CronJob('0 * * * *', async () => {
+  const before24hours = moment().subtract(24, 'hours');
+  await Log.deleteMany({
+    dateTime: { $lte: before24hours },
+  });
+},()=>console.log("Logs for last 24 hours Deleted...."));
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -35,4 +44,5 @@ app.listen(PORT, () => {
   bot.launch().then(() => {
     console.log("Bot is Online")
   })
+  job.start();
 })
